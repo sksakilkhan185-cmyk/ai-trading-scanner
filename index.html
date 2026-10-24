@@ -6,62 +6,428 @@
 <title>AI Trading Scanner</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   padding: 20px;
-  background: #101827;
+  background: #081018;
   color: white;
   font-family: Arial, sans-serif;
+}
+
+.container {
+  max-width: 700px;
+  margin: auto;
+}
+
+.header {
   text-align: center;
+  margin-bottom: 20px;
 }
-.card {
-  max-width: 350px;
-  margin: 50px auto;
-  padding: 25px;
-  background: #1e293b;
-  border-radius: 16px;
+
+.header h1 {
+  margin-bottom: 8px;
+  color: #38bdf8;
 }
-h2 { color: #38bdf8; }
+
+.header p {
+  color: #94a3b8;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+select,
 button {
-  padding: 14px 25px;
+  flex: 1;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+}
+
+select {
+  background: #172333;
+  color: white;
+}
+
+button {
   background: #0ea5e9;
   color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 17px;
-}
-#signal {
-  margin-top: 20px;
-  font-size: 24px;
   font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0284c7;
+}
+
+.card {
+  background: #111c2b;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 15px;
+  border: 1px solid #243447;
+}
+
+.price {
+  font-size: 30px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.signal {
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  padding: 20px;
+  border-radius: 12px;
+  margin: 15px 0;
+}
+
+.buy {
+  background: #064e3b;
+  color: #34d399;
+}
+
+.sell {
+  background: #7f1d1d;
+  color: #f87171;
+}
+
+.hold {
+  background: #78350f;
+  color: #fbbf24;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat {
+  background: #172333;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+.label {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.value {
+  font-size: 18px;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.status {
+  text-align: center;
+  color: #94a3b8;
+  margin-top: 15px;
+}
+
+small {
+  color: #64748b;
 }
 </style>
 </head>
 
 <body>
-<div class="card">
-  <h2>AI Trading Scanner</h2>
-  <p>Market Direction Analysis</p>
 
-  <button onclick="scanMarket()">Scan Market</button>
+<div class="container">
 
-  <div id="signal">Waiting for scan...</div>
-  <p id="confidence"></p>
+  <div class="header">
+    <h1>🤖 AI Trading Scanner</h1>
+    <p>Live Cryptocurrency Market Analysis</p>
+  </div>
 
-  <small>
-    Demo only. No live market data.
-    Signals are not guaranteed.
-  </small>
+  <div class="controls">
+    <select id="symbol">
+      <option value="BTCUSDT">BTC / USDT</option>
+      <option value="ETHUSDT">ETH / USDT</option>
+      <option value="BNBUSDT">BNB / USDT</option>
+      <option value="SOLUSDT">SOL / USDT</option>
+      <option value="XRPUSDT">XRP / USDT</option>
+    </select>
+
+    <button onclick="scanMarket()">SCAN</button>
+  </div>
+
+  <div class="card">
+
+    <div id="price" class="price">
+      Loading...
+    </div>
+
+    <div id="signal" class="signal hold">
+      WAITING
+    </div>
+
+    <div class="stats">
+
+      <div class="stat">
+        <div class="label">RSI</div>
+        <div id="rsi" class="value">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">EMA 20</div>
+        <div id="ema20" class="value">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">EMA 50</div>
+        <div id="ema50" class="value">-</div>
+      </div>
+
+      <div class="stat">
+        <div class="label">MACD</div>
+        <div id="macd" class="value">-</div>
+      </div>
+
+    </div>
+
+    <p id="analysis" class="status">
+      Press SCAN to analyze the market.
+    </p>
+
+    <p class="status">
+      <small>⚠️ This scanner is for analysis only. Trading signals are not guaranteed.</small>
+    </p>
+
+  </div>
+
 </div>
 
 <script>
-function scanMarket() {
-  document.getElementById("signal").textContent =
-    "Live market data required";
 
-  document.getElementById("confidence").textContent =
-    "Connect a market data source to analyze price direction.";
+const API =
+"https://api.binance.com/api/v3/klines";
+
+async function getData(symbol) {
+
+  const url =
+    API +
+    "?symbol=" +
+    symbol +
+    "&interval=1h&limit=100";
+
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error("Market data unavailable");
+  }
+
+  return await response.json();
 }
+
+function ema(values, period) {
+
+  const multiplier = 2 / (period + 1);
+
+  let emaValue = values[0];
+
+  for (let i = 1; i < values.length; i++) {
+
+    emaValue =
+      (values[i] - emaValue) *
+      multiplier +
+      emaValue;
+  }
+
+  return emaValue;
+}
+
+function calculateRSI(values, period = 14) {
+
+  let gains = 0;
+  let losses = 0;
+
+  for (let i = 1; i <= period; i++) {
+
+    const change =
+      values[i] - values[i - 1];
+
+    if (change >= 0) {
+      gains += change;
+    } else {
+      losses += Math.abs(change);
+    }
+  }
+
+  let avgGain = gains / period;
+  let avgLoss = losses / period;
+
+  for (let i = period + 1; i < values.length; i++) {
+
+    const change =
+      values[i] - values[i - 1];
+
+    const gain =
+      change > 0 ? change : 0;
+
+    const loss =
+      change < 0 ? Math.abs(change) : 0;
+
+    avgGain =
+      ((avgGain * (period - 1)) + gain) /
+      period;
+
+    avgLoss =
+      ((avgLoss * (period - 1)) + loss) /
+      period;
+  }
+
+  if (avgLoss === 0) {
+    return 100;
+  }
+
+  const rs = avgGain / avgLoss;
+
+  return 100 - (100 / (1 + rs));
+}
+
+async function scanMarket() {
+
+  const symbol =
+    document.getElementById("symbol").value;
+
+  const signal =
+    document.getElementById("signal");
+
+  const analysis =
+    document.getElementById("analysis");
+
+  signal.className = "signal hold";
+  signal.textContent = "SCANNING...";
+
+  analysis.textContent =
+    "Downloading live market data...";
+
+  try {
+
+    const data =
+      await getData(symbol);
+
+    const closes =
+      data.map(candle =>
+        parseFloat(candle[4])
+      );
+
+    const price =
+      closes[closes.length - 1];
+
+    const ema20 =
+      ema(closes, 20);
+
+    const ema50 =
+      ema(closes, 50);
+
+    const rsi =
+      calculateRSI(closes, 14);
+
+    const fastEMA =
+      ema(closes, 12);
+
+    const slowEMA =
+      ema(closes, 26);
+
+    const macd =
+      fastEMA - slowEMA;
+
+    document.getElementById("price")
+      .textContent =
+      price.toFixed(4) + " USDT";
+
+    document.getElementById("rsi")
+      .textContent =
+      rsi.toFixed(2);
+
+    document.getElementById("ema20")
+      .textContent =
+      ema20.toFixed(4);
+
+    document.getElementById("ema50")
+      .textContent =
+      ema50.toFixed(4);
+
+    document.getElementById("macd")
+      .textContent =
+      macd.toFixed(4);
+
+    let score = 0;
+
+    if (price > ema20) score++;
+    else score--;
+
+    if (ema20 > ema50) score++;
+    else score--;
+
+    if (rsi > 55 && rsi < 70) score++;
+    if (rsi < 45 && rsi > 30) score--;
+
+    if (macd > 0) score++;
+    else score--;
+
+    if (score >= 2) {
+
+      signal.className =
+        "signal buy";
+
+      signal.textContent =
+        "🟢 BUY";
+
+      analysis.textContent =
+        "Bullish conditions detected. Price and indicators show upward momentum.";
+
+    } else if (score <= -2) {
+
+      signal.className =
+        "signal sell";
+
+      signal.textContent =
+        "🔴 SELL";
+
+      analysis.textContent =
+        "Bearish conditions detected. Price and indicators show downward momentum.";
+
+    } else {
+
+      signal.className =
+        "signal hold";
+
+      signal.textContent =
+        "🟡 HOLD";
+
+      analysis.textContent =
+        "Market conditions are mixed. Waiting for stronger confirmation.";
+    }
+
+  } catch (error) {
+
+    signal.className =
+      "signal sell";
+
+    signal.textContent =
+      "ERROR";
+
+    analysis.textContent =
+      "Could not load live market data. Please try again.";
+  }
+}
+
+scanMarket();
+
 </script>
+
 </body>
 </html>
