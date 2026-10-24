@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>AI Trading Scanner</title>
 
 <style>
@@ -12,14 +13,14 @@
 
 body {
   margin: 0;
-  padding: 20px;
-  background: #081018;
+  padding: 18px;
+  background: #071019;
   color: white;
   font-family: Arial, sans-serif;
 }
 
 .container {
-  max-width: 700px;
+  max-width: 750px;
   margin: auto;
 }
 
@@ -29,26 +30,29 @@ body {
 }
 
 .header h1 {
-  margin-bottom: 8px;
   color: #38bdf8;
+  font-size: 32px;
+  margin-bottom: 8px;
 }
 
 .header p {
   color: #94a3b8;
+  font-size: 16px;
 }
 
 .controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 10px;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 select,
 button {
-  flex: 1;
-  padding: 14px;
+  width: 100%;
+  padding: 15px;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 16px;
 }
 
@@ -61,25 +65,31 @@ button {
   background: #0ea5e9;
   color: white;
   font-weight: bold;
-  cursor: pointer;
 }
 
-button:hover {
-  background: #0284c7;
+button:active {
+  transform: scale(.98);
 }
 
 .card {
-  background: #111c2b;
-  border-radius: 16px;
-  padding: 20px;
-  margin-bottom: 15px;
+  background: #101c2b;
   border: 1px solid #243447;
+  border-radius: 18px;
+  padding: 18px;
+  margin-bottom: 15px;
 }
 
 .price {
-  font-size: 30px;
+  text-align: center;
+  font-size: 34px;
   font-weight: bold;
-  margin: 10px 0;
+  margin: 8px 0;
+}
+
+.change {
+  text-align: center;
+  color: #94a3b8;
+  margin-bottom: 15px;
 }
 
 .signal {
@@ -87,7 +97,7 @@ button:hover {
   font-size: 30px;
   font-weight: bold;
   padding: 20px;
-  border-radius: 12px;
+  border-radius: 14px;
   margin: 15px 0;
 }
 
@@ -106,16 +116,48 @@ button:hover {
   color: #fbbf24;
 }
 
+.strength {
+  text-align: center;
+  font-size: 18px;
+  margin: 12px 0;
+}
+
+.bar {
+  height: 10px;
+  background: #243447;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  width: 0%;
+  background: #38bdf8;
+  transition: width .5s;
+}
+
+.chartBox {
+  width: 100%;
+  height: 260px;
+  position: relative;
+}
+
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
 .stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
+  margin-top: 15px;
 }
 
 .stat {
   background: #172333;
   padding: 15px;
-  border-radius: 10px;
+  border-radius: 12px;
 }
 
 .label {
@@ -124,19 +166,41 @@ button:hover {
 }
 
 .value {
+  margin-top: 6px;
   font-size: 18px;
-  margin-top: 5px;
   font-weight: bold;
+}
+
+.analysis {
+  text-align: center;
+  color: #cbd5e1;
+  line-height: 1.5;
+  margin-top: 18px;
 }
 
 .status {
   text-align: center;
-  color: #94a3b8;
-  margin-top: 15px;
+  color: #64748b;
+  font-size: 13px;
 }
 
-small {
-  color: #64748b;
+@media(max-width:500px) {
+
+  body {
+    padding: 12px;
+  }
+
+  .header h1 {
+    font-size: 28px;
+  }
+
+  .price {
+    font-size: 28px;
+  }
+
+  .signal {
+    font-size: 26px;
+  }
 }
 </style>
 </head>
@@ -145,66 +209,105 @@ small {
 
 <div class="container">
 
-  <div class="header">
-    <h1>🤖 AI Trading Scanner</h1>
-    <p>Live Cryptocurrency Market Analysis</p>
-  </div>
+<div class="header">
+<h1>🤖 AI Trading Scanner</h1>
+<p>Live Cryptocurrency Market Analysis</p>
+</div>
 
-  <div class="controls">
-    <select id="symbol">
-      <option value="BTCUSDT">BTC / USDT</option>
-      <option value="ETHUSDT">ETH / USDT</option>
-      <option value="BNBUSDT">BNB / USDT</option>
-      <option value="SOLUSDT">SOL / USDT</option>
-      <option value="XRPUSDT">XRP / USDT</option>
-    </select>
+<div class="controls">
 
-    <button onclick="scanMarket()">SCAN</button>
-  </div>
+<select id="symbol">
+<option value="BTCUSDT">BTC / USDT</option>
+<option value="ETHUSDT">ETH / USDT</option>
+<option value="BNBUSDT">BNB / USDT</option>
+<option value="SOLUSDT">SOL / USDT</option>
+<option value="XRPUSDT">XRP / USDT</option>
+</select>
 
-  <div class="card">
+<select id="interval">
+<option value="15m">15 Minutes</option>
+<option value="1h" selected>1 Hour</option>
+<option value="4h">4 Hours</option>
+</select>
 
-    <div id="price" class="price">
-      Loading...
-    </div>
+</div>
 
-    <div id="signal" class="signal hold">
-      WAITING
-    </div>
+<button onclick="scanMarket()">🔍 SCAN MARKET</button>
 
-    <div class="stats">
+<div class="card">
 
-      <div class="stat">
-        <div class="label">RSI</div>
-        <div id="rsi" class="value">-</div>
-      </div>
+<div id="price" class="price">
+Loading...
+</div>
 
-      <div class="stat">
-        <div class="label">EMA 20</div>
-        <div id="ema20" class="value">-</div>
-      </div>
+<div id="change" class="change">
+Loading market...
+</div>
 
-      <div class="stat">
-        <div class="label">EMA 50</div>
-        <div id="ema50" class="value">-</div>
-      </div>
+<div id="signal" class="signal hold">
+WAITING
+</div>
 
-      <div class="stat">
-        <div class="label">MACD</div>
-        <div id="macd" class="value">-</div>
-      </div>
+<div class="strength">
+Signal Strength:
+<strong id="strength">0%</strong>
+</div>
 
-    </div>
+<div class="bar">
+<div id="barFill" class="barFill"></div>
+</div>
 
-    <p id="analysis" class="status">
-      Press SCAN to analyze the market.
-    </p>
+</div>
 
-    <p class="status">
-      <small>⚠️ This scanner is for analysis only. Trading signals are not guaranteed.</small>
-    </p>
+<div class="card">
 
-  </div>
+<h3>📈 Price Chart</h3>
+
+<div class="chartBox">
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<div class="card">
+
+<div class="stats">
+
+<div class="stat">
+<div class="label">RSI</div>
+<div id="rsi" class="value">-</div>
+</div>
+
+<div class="stat">
+<div class="label">EMA 20</div>
+<div id="ema20" class="value">-</div>
+</div>
+
+<div class="stat">
+<div class="label">EMA 50</div>
+<div id="ema50" class="value">-</div>
+</div>
+
+<div class="stat">
+<div class="label">MACD</div>
+<div id="macd" class="value">-</div>
+</div>
+
+</div>
+
+<p id="analysis" class="analysis">
+Press SCAN MARKET to analyze.
+</p>
+
+<p class="status">
+Last update: <span id="updated">-</span>
+</p>
+
+<p class="status">
+⚠️ Analysis only. Signals are not guaranteed.
+</p>
+
+</div>
 
 </div>
 
@@ -213,219 +316,352 @@ small {
 const API =
 "https://api.binance.com/api/v3/klines";
 
-async function getData(symbol) {
+async function getData(symbol, interval) {
 
-  const url =
-    API +
-    "?symbol=" +
-    symbol +
-    "&interval=1h&limit=100";
+const url =
+API +
+"?symbol=" +
+symbol +
+"&interval=" +
+interval +
+"&limit=100";
 
-  const response = await fetch(url);
+const response =
+await fetch(url);
 
-  if (!response.ok) {
-    throw new Error("Market data unavailable");
-  }
+if (!response.ok) {
+throw new Error("Market data unavailable");
+}
 
-  return await response.json();
+return await response.json();
 }
 
 function ema(values, period) {
 
-  const multiplier = 2 / (period + 1);
+const multiplier =
+2 / (period + 1);
 
-  let emaValue = values[0];
+let result =
+values[0];
 
-  for (let i = 1; i < values.length; i++) {
+for(let i = 1; i < values.length; i++) {
 
-    emaValue =
-      (values[i] - emaValue) *
-      multiplier +
-      emaValue;
-  }
+result =
+(values[i] - result) *
+multiplier + result;
 
-  return emaValue;
 }
 
-function calculateRSI(values, period = 14) {
+return result;
+}
 
-  let gains = 0;
-  let losses = 0;
+function calculateRSI(values, period=14) {
 
-  for (let i = 1; i <= period; i++) {
+let gains = 0;
+let losses = 0;
 
-    const change =
-      values[i] - values[i - 1];
+for(let i=1; i<=period; i++) {
 
-    if (change >= 0) {
-      gains += change;
-    } else {
-      losses += Math.abs(change);
-    }
-  }
+const change =
+values[i] - values[i-1];
 
-  let avgGain = gains / period;
-  let avgLoss = losses / period;
+if(change >= 0)
+gains += change;
+else
+losses += Math.abs(change);
 
-  for (let i = period + 1; i < values.length; i++) {
+}
 
-    const change =
-      values[i] - values[i - 1];
+let avgGain =
+gains / period;
 
-    const gain =
-      change > 0 ? change : 0;
+let avgLoss =
+losses / period;
 
-    const loss =
-      change < 0 ? Math.abs(change) : 0;
+for(let i=period+1; i<values.length; i++) {
 
-    avgGain =
-      ((avgGain * (period - 1)) + gain) /
-      period;
+const change =
+values[i] - values[i-1];
 
-    avgLoss =
-      ((avgLoss * (period - 1)) + loss) /
-      period;
-  }
+const gain =
+change > 0 ? change : 0;
 
-  if (avgLoss === 0) {
-    return 100;
-  }
+const loss =
+change < 0 ? Math.abs(change) : 0;
 
-  const rs = avgGain / avgLoss;
+avgGain =
+((avgGain*(period-1))+gain)/period;
 
-  return 100 - (100 / (1 + rs));
+avgLoss =
+((avgLoss*(period-1))+loss)/period;
+
+}
+
+if(avgLoss === 0)
+return 100;
+
+const rs =
+avgGain / avgLoss;
+
+return 100 - (100/(1+rs));
+}
+
+function drawChart(values) {
+
+const canvas =
+document.getElementById("chart");
+
+const ctx =
+canvas.getContext("2d");
+
+const width =
+canvas.clientWidth;
+
+const height =
+canvas.clientHeight;
+
+canvas.width =
+width * devicePixelRatio;
+
+canvas.height =
+height * devicePixelRatio;
+
+ctx.scale(
+devicePixelRatio,
+devicePixelRatio
+);
+
+ctx.clearRect(0,0,width,height);
+
+const min =
+Math.min(...values);
+
+const max =
+Math.max(...values);
+
+const range =
+max-min || 1;
+
+ctx.beginPath();
+
+values.forEach((value,index)=>{
+
+const x =
+(index/(values.length-1))*width;
+
+const y =
+height -
+((value-min)/range)*height;
+
+if(index===0)
+ctx.moveTo(x,y);
+else
+ctx.lineTo(x,y);
+
+});
+
+ctx.strokeStyle =
+"#38bdf8";
+
+ctx.lineWidth = 2;
+
+ctx.stroke();
 }
 
 async function scanMarket() {
 
-  const symbol =
-    document.getElementById("symbol").value;
+const symbol =
+document.getElementById("symbol").value;
 
-  const signal =
-    document.getElementById("signal");
+const interval =
+document.getElementById("interval").value;
 
-  const analysis =
-    document.getElementById("analysis");
+const signal =
+document.getElementById("signal");
 
-  signal.className = "signal hold";
-  signal.textContent = "SCANNING...";
+const analysis =
+document.getElementById("analysis");
 
-  analysis.textContent =
-    "Downloading live market data...";
+signal.className =
+"signal hold";
 
-  try {
+signal.textContent =
+"SCANNING...";
 
-    const data =
-      await getData(symbol);
+try {
 
-    const closes =
-      data.map(candle =>
-        parseFloat(candle[4])
-      );
+const data =
+await getData(symbol,interval);
 
-    const price =
-      closes[closes.length - 1];
+const closes =
+data.map(c =>
+parseFloat(c[4])
+);
 
-    const ema20 =
-      ema(closes, 20);
+const firstPrice =
+closes[0];
 
-    const ema50 =
-      ema(closes, 50);
+const price =
+closes[closes.length-1];
 
-    const rsi =
-      calculateRSI(closes, 14);
+const ema20 =
+ema(closes,20);
 
-    const fastEMA =
-      ema(closes, 12);
+const ema50 =
+ema(closes,50);
 
-    const slowEMA =
-      ema(closes, 26);
+const rsi =
+calculateRSI(closes,14);
 
-    const macd =
-      fastEMA - slowEMA;
+const fastEMA =
+ema(closes,12);
 
-    document.getElementById("price")
-      .textContent =
-      price.toFixed(4) + " USDT";
+const slowEMA =
+ema(closes,26);
 
-    document.getElementById("rsi")
-      .textContent =
-      rsi.toFixed(2);
+const macd =
+fastEMA-slowEMA;
 
-    document.getElementById("ema20")
-      .textContent =
-      ema20.toFixed(4);
+const change =
+((price-firstPrice)/
+firstPrice)*100;
 
-    document.getElementById("ema50")
-      .textContent =
-      ema50.toFixed(4);
+document.getElementById("price")
+.textContent =
+price.toFixed(4)+" USDT";
 
-    document.getElementById("macd")
-      .textContent =
-      macd.toFixed(4);
+document.getElementById("change")
+.textContent =
+"Period change: "+
+change.toFixed(2)+"%";
 
-    let score = 0;
+document.getElementById("rsi")
+.textContent =
+rsi.toFixed(2);
 
-    if (price > ema20) score++;
-    else score--;
+document.getElementById("ema20")
+.textContent =
+ema20.toFixed(4);
 
-    if (ema20 > ema50) score++;
-    else score--;
+document.getElementById("ema50")
+.textContent =
+ema50.toFixed(4);
 
-    if (rsi > 55 && rsi < 70) score++;
-    if (rsi < 45 && rsi > 30) score--;
+document.getElementById("macd")
+.textContent =
+macd.toFixed(4);
 
-    if (macd > 0) score++;
-    else score--;
+drawChart(closes);
 
-    if (score >= 2) {
+let score = 0;
 
-      signal.className =
-        "signal buy";
+if(price > ema20)
+score++;
 
-      signal.textContent =
-        "🟢 BUY";
+else
+score--;
 
-      analysis.textContent =
-        "Bullish conditions detected. Price and indicators show upward momentum.";
+if(ema20 > ema50)
+score++;
 
-    } else if (score <= -2) {
+else
+score--;
 
-      signal.className =
-        "signal sell";
+if(rsi > 55 && rsi < 70)
+score++;
 
-      signal.textContent =
-        "🔴 SELL";
+else if(rsi < 45 && rsi > 30)
+score--;
 
-      analysis.textContent =
-        "Bearish conditions detected. Price and indicators show downward momentum.";
+if(macd > 0)
+score++;
 
-    } else {
+else
+score--;
 
-      signal.className =
-        "signal hold";
+let strength =
+Math.round(
+(Math.abs(score)/4)*100
+);
 
-      signal.textContent =
-        "🟡 HOLD";
+if(score >= 2) {
 
-      analysis.textContent =
-        "Market conditions are mixed. Waiting for stronger confirmation.";
-    }
+signal.className =
+"signal buy";
 
-  } catch (error) {
+signal.textContent =
+"🟢 BUY";
 
-    signal.className =
-      "signal sell";
+analysis.textContent =
+"Bullish conditions detected. "+
+"Price is showing positive momentum.";
 
-    signal.textContent =
-      "ERROR";
+}
 
-    analysis.textContent =
-      "Could not load live market data. Please try again.";
-  }
+else if(score <= -2) {
+
+signal.className =
+"signal sell";
+
+signal.textContent =
+"🔴 SELL";
+
+analysis.textContent =
+"Bearish conditions detected. "+
+"Price is showing downward momentum.";
+
+}
+
+else {
+
+signal.className =
+"signal hold";
+
+signal.textContent =
+"🟡 HOLD";
+
+analysis.textContent =
+"Market conditions are mixed. "+
+"Wait for stronger confirmation.";
+
+}
+
+document.getElementById("strength")
+.textContent =
+strength+"%";
+
+document.getElementById("barFill")
+.style.width =
+strength+"%";
+
+document.getElementById("updated")
+.textContent =
+new Date().toLocaleTimeString();
+
+}
+
+catch(error) {
+
+signal.className =
+"signal hold";
+
+signal.textContent =
+"ERROR";
+
+analysis.textContent =
+"Unable to load market data. "+
+"Please try again.";
+
+}
+
 }
 
 scanMarket();
+
+setInterval(
+scanMarket,
+60000
+);
 
 </script>
 
