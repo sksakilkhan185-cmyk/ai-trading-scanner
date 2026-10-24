@@ -2,1174 +2,1198 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AI Forex Scanner</title>
 
 <style>
-*{
-  box-sizing:border-box;
-  -webkit-tap-highlight-color:transparent;
-}
-
-html,body{
-  margin:0;
-  padding:0;
-  width:100%;
-  min-height:100%;
-  background:#070b10;
-  color:#e8eef5;
-  font-family:Arial,Helvetica,sans-serif;
-}
-
+*{box-sizing:border-box}
 body{
-  overflow-x:hidden;
+  margin:0;
+  background:#07111f;
+  color:#fff;
+  font-family:Arial,sans-serif;
 }
-
-#app{
-  width:100%;
+.container{
   max-width:700px;
   margin:auto;
-  padding:12px;
-  padding-bottom:100px;
+  padding:15px;
 }
-
-.header{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:10px;
+h1{
+  text-align:center;
+  margin:5px 0 15px;
+  font-size:24px;
 }
-
-.title{
-  font-size:19px;
-  font-weight:800;
-}
-
-.live{
-  font-size:11px;
-  color:#58d68d;
-  display:flex;
-  align-items:center;
-  gap:5px;
-}
-
-.liveDot{
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:#35d27c;
-  box-shadow:0 0 8px #35d27c;
-}
-
 .card{
-  background:#10161d;
-  border:1px solid #202a34;
-  border-radius:14px;
-  padding:11px;
-  margin-bottom:10px;
+  background:#0d1b2d;
+  border:1px solid #20334d;
+  border-radius:15px;
+  padding:14px;
+  margin-bottom:12px;
 }
-
-.controls{
+label{
+  display:block;
+  margin:8px 0 5px;
+  font-size:13px;
+  color:#9fb3c8;
+}
+input,select,button{
+  width:100%;
+  padding:12px;
+  border-radius:9px;
+  border:1px solid #304963;
+  background:#101f33;
+  color:white;
+  font-size:15px;
+}
+button{
+  cursor:pointer;
+  font-weight:bold;
+}
+.row{
   display:grid;
   grid-template-columns:1fr 1fr;
   gap:8px;
 }
-
-label{
-  display:block;
-  font-size:10px;
-  color:#8996a3;
-  margin-bottom:4px;
-}
-
-select,input{
-  width:100%;
-  border:1px solid #2b3742;
-  background:#0b1015;
-  color:#eef4f8;
-  border-radius:8px;
-  padding:10px;
-  outline:none;
-}
-
-button{
-  border:0;
-  color:white;
-  background:#1677ff;
-  border-radius:9px;
-  padding:10px 12px;
-  font-weight:700;
-}
-
-.apiRow{
-  display:flex;
+.time-buttons{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
   gap:6px;
+}
+.time-buttons button{
+  padding:10px 4px;
+}
+.time-buttons button.active{
+  background:#1d6fff;
+  border-color:#4d91ff;
+}
+.save{
   margin-top:8px;
+  background:#164d35;
 }
-
-.apiRow input{
-  flex:1;
+.test{
+  margin-top:8px;
+  background:#193d68;
 }
-
-.apiRow button{
-  width:85px;
+.scan{
+  margin-top:10px;
+  background:#1769aa;
 }
-
-.priceBox{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+.status{
+  margin-top:10px;
+  padding:10px;
+  border-radius:8px;
+  background:#101d2d;
+  font-size:13px;
+  line-height:1.4;
 }
-
-.symbol{
-  font-size:18px;
-  font-weight:800;
-}
-
-.price{
-  font-size:23px;
-  font-weight:800;
-  text-align:right;
-}
-
-.change{
-  font-size:11px;
-  text-align:right;
-  margin-top:3px;
-}
-
-.upText{
-  color:#55d88a;
-}
-
-.downText{
-  color:#ff5e68;
-}
-
-.sideText{
-  color:#f4c95d;
-}
-
-.chartWrap{
-  position:relative;
+.good{color:#43e58a}
+.bad{color:#ff6666}
+.chart-box{
   width:100%;
-  height:310px;
-  background:#080c11;
-  border-radius:10px;
-  overflow:hidden;
-  border:1px solid #202a34;
+  height:330px;
+  position:relative;
 }
-
-#chart{
+canvas{
   width:100%;
   height:100%;
   display:block;
 }
-
-.chartInfo{
-  position:absolute;
-  left:8px;
-  top:7px;
-  font-size:10px;
-  color:#9ca9b5;
-  pointer-events:none;
+.price{
+  font-size:25px;
+  font-weight:bold;
+  text-align:center;
+  margin:5px 0;
 }
-
 .direction{
-  margin-top:9px;
   text-align:center;
   font-size:18px;
-  font-weight:900;
-  padding:9px;
-  border-radius:9px;
+  font-weight:bold;
+  margin:8px;
 }
-
-.direction.up{
-  background:rgba(50,210,120,.10);
-  color:#53da8b;
-  border:1px solid rgba(50,210,120,.25);
-}
-
-.direction.down{
-  background:rgba(255,70,80,.10);
-  color:#ff6870;
-  border:1px solid rgba(255,70,80,.25);
-}
-
-.direction.side{
-  background:rgba(240,190,60,.10);
-  color:#f1ca62;
-  border:1px solid rgba(240,190,60,.25);
-}
-
 .signal{
   text-align:center;
-  font-size:25px;
-  font-weight:900;
-  margin-top:9px;
-  padding:10px;
-  border-radius:10px;
+  font-size:28px;
+  font-weight:bold;
+  padding:15px;
+  border-radius:12px;
+  margin-top:10px;
 }
-
-.signal.buy{
-  background:#0e3a27;
-  color:#5be695;
+.buy{
+  background:#123d2b;
+  color:#43e58a;
 }
-
-.signal.sell{
-  background:#3d151b;
-  color:#ff7078;
+.sell{
+  background:#421c24;
+  color:#ff6666;
 }
-
-.signal.wait{
-  background:#312b13;
-  color:#f0cf67;
+.wait{
+  background:#303027;
+  color:#ffd966;
 }
-
-.metrics{
+.stats{
   display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:6px;
-  margin-top:9px;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
 }
-
-.metric{
-  background:#0b1015;
-  border:1px solid #202a34;
-  border-radius:8px;
-  padding:8px;
-}
-
-.metric span{
-  display:block;
-  font-size:9px;
-  color:#7e8b98;
-}
-
-.metric b{
-  display:block;
-  margin-top:3px;
-  font-size:12px;
-}
-
-.confidence{
-  margin-top:9px;
+.stat{
+  background:#101f33;
+  padding:12px;
+  border-radius:10px;
   text-align:center;
-  color:#aeb9c3;
-  font-size:11px;
 }
-
-.confidence b{
-  color:#fff;
-  font-size:15px;
+.stat small{
+  display:block;
+  color:#8fa3b8;
+  margin-bottom:4px;
 }
-
-.status{
-  font-size:10px;
-  color:#7f8b97;
-  text-align:center;
-  margin-top:8px;
-  min-height:14px;
-}
-
-.follow{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:11px;
-  margin-top:8px;
-}
-
-.switch{
-  color:#55d88a;
-  font-weight:700;
-}
-
-.scanBtn{
+#floatingScan{
   position:fixed;
   right:18px;
   bottom:25px;
-  width:68px;
-  height:68px;
+  width:90px;
+  height:90px;
   border-radius:50%;
   background:#1677ff;
-  color:#fff;
-  font-size:12px;
-  font-weight:900;
-  box-shadow:0 8px 25px rgba(0,100,255,.35);
+  border:3px solid #fff;
+  box-shadow:0 5px 25px #0008;
   z-index:9999;
   touch-action:none;
   user-select:none;
 }
-
-.scanBtn.dragging{
-  opacity:.75;
-  transform:scale(1.05);
-}
-
-.panel{
-  display:none;
-}
-
-.panel.show{
-  display:block;
-}
-
-.timeframes{
-  display:grid;
-  grid-template-columns:repeat(4,1fr);
-  gap:5px;
-  margin-top:9px;
-}
-
-.tf{
-  background:#0b1015;
-  border:1px solid #28343f;
-  color:#9eabb7;
-  padding:8px 3px;
-  border-radius:7px;
-  font-size:11px;
-  font-weight:700;
-}
-
-.tf.active{
-  background:#1677ff;
-  color:#fff;
-  border-color:#1677ff;
-}
-
-.small{
-  font-size:9px;
-  color:#677582;
-  line-height:1.4;
-  margin-top:7px;
-}
-
-.error{
-  color:#ff6972;
-}
-
-.ok{
-  color:#55d88a;
-}
-
-@media(max-width:420px){
-  #app{
-    padding:8px;
-  }
-
-  .chartWrap{
-    height:280px;
-  }
-
-  .price{
-    font-size:20px;
-  }
-
-  .symbol{
-    font-size:16px;
-  }
+.note{
+  color:#9fb3c8;
+  font-size:12px;
+  line-height:1.5;
 }
 </style>
 </head>
 
 <body>
 
-<div id="app">
+<div class="container">
 
-  <div class="header">
-    <div class="title">⚡ AI Forex Scanner</div>
-    <div class="live">
-      <span class="liveDot"></span>
-      <span id="liveText">LIVE</span>
-    </div>
-  </div>
+<h1>🤖 AI Forex Scanner</h1>
 
-  <div class="card">
+<div class="card">
 
-    <div class="controls">
+<label>Twelve Data API Key</label>
 
-      <div>
-        <label>FOREX MARKET</label>
-        <select id="symbol">
-          <option value="NZD/JPY">NZD/JPY</option>
-          <option value="NZD/USD">NZD/USD</option>
-          <option value="USD/MXN">USD/MXN</option>
-          <option value="USD/PHP">USD/PHP</option>
-          <option value="USD/NGN">USD/NGN</option>
-          <option value="USD/JPY" selected>USD/JPY</option>
-          <option value="CHF/JPY">CHF/JPY</option>
-          <option value="CAD/JPY">CAD/JPY</option>
-          <option value="GBP/CHF">GBP/CHF</option>
-          <option value="USD/CAD">USD/CAD</option>
-        </select>
-      </div>
+<input
+  id="apiKey"
+  type="password"
+  placeholder="Paste your Twelve Data API key"
+>
 
-      <div>
-        <label>TIMEFRAME</label>
-        <select id="timeframe">
-          <option value="1min">1 MIN</option>
-          <option value="2min">2 MIN</option>
-          <option value="5min">5 MIN</option>
-          <option value="15min">15 MIN</option>
-        </select>
-      </div>
+<div class="row">
+  <button class="save" onclick="saveKey()">SAVE KEY</button>
+  <button class="test" onclick="testAPI()">TEST API</button>
+</div>
 
-    </div>
+<div id="status" class="status">
+Status: API key not tested yet.
+</div>
 
-    <div class="timeframes">
-      <button class="tf active" data-tf="1min">1m</button>
-      <button class="tf" data-tf="2min">2m</button>
-      <button class="tf" data-tf="5min">5m</button>
-      <button class="tf" data-tf="15min">15m</button>
-    </div>
+<label>Forex Market</label>
 
-    <div class="apiRow">
-      <input
-        id="apiKey"
-        type="password"
-        placeholder="Twelve Data API Key"
-        autocomplete="off"
-      >
-      <button id="saveKey">SAVE</button>
-    </div>
+<select id="symbol">
+<option>NZD/JPY</option>
+<option>NZD/USD</option>
+<option>USD/MXN</option>
+<option>USD/PHP</option>
+<option>USD/NGN</option>
+<option>USD/JPY</option>
+<option>CHF/JPY</option>
+<option>CAD/JPY</option>
+<option>GBP/CHF</option>
+<option>USD/CAD</option>
+<option>EUR/USD</option>
+</select>
 
-    <div class="small">
-      API keyটি আপনার browser-এ রাখা হবে। Public GitHub site-এ API key
-      রাখা নিরাপদ নয়; production version-এর জন্য backend/proxy ব্যবহার করা ভালো।
-    </div>
+<label>Timeframe</label>
 
-  </div>
+<div class="time-buttons">
+<button class="active" data-tf="1min">1M</button>
+<button data-tf="2min">2M</button>
+<button data-tf="5min">5M</button>
+<button data-tf="15min">15M</button>
+</div>
 
-  <div class="card">
-
-    <div class="priceBox">
-
-      <div>
-        <div class="symbol" id="symbolName">USD/JPY</div>
-        <div style="font-size:10px;color:#71808d;margin-top:4px;">
-          REAL MARKET DATA
-        </div>
-      </div>
-
-      <div>
-        <div class="price" id="price">--</div>
-        <div class="change" id="change">--</div>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="card">
-
-    <div class="chartWrap">
-      <canvas id="chart"></canvas>
-      <div class="chartInfo" id="chartInfo">
-        Loading candles...
-      </div>
-    </div>
-
-    <div id="direction" class="direction side">
-      MARKET DIRECTION: SIDEWAYS
-    </div>
-
-    <div id="signal" class="signal wait">
-      NO TRADE
-    </div>
-
-    <div class="confidence">
-      Indicator Confidence:
-      <b id="confidence">--%</b>
-    </div>
-
-    <div class="metrics">
-
-      <div class="metric">
-        <span>RSI</span>
-        <b id="rsi">--</b>
-      </div>
-
-      <div class="metric">
-        <span>EMA 20</span>
-        <b id="ema20">--</b>
-      </div>
-
-      <div class="metric">
-        <span>EMA 50</span>
-        <b id="ema50">--</b>
-      </div>
-
-      <div class="metric">
-        <span>MACD</span>
-        <b id="macd">--</b>
-      </div>
-
-      <div class="metric">
-        <span>HIGH</span>
-        <b id="high">--</b>
-      </div>
-
-      <div class="metric">
-        <span>LOW</span>
-        <b id="low">--</b>
-      </div>
-
-    </div>
-
-    <div class="follow">
-      <span>Market Following</span>
-      <span class="switch">● ON</span>
-    </div>
-
-    <div class="status" id="status">
-      Enter your Twelve Data API key.
-    </div>
-
-  </div>
+<button class="scan" onclick="scanMarket()">🔎 SCAN MARKET</button>
 
 </div>
 
-<button id="scanBtn" class="scanBtn">⚡<br>SCAN</button>
+
+<div class="card">
+
+<div id="price" class="price">--</div>
+
+<div id="direction" class="direction">
+MARKET DIRECTION: --
+</div>
+
+<div class="chart-box">
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div id="signal" class="signal wait">
+NO TRADE
+</div>
+
+<div class="stats">
+
+<div class="stat">
+<small>Indicator Confidence</small>
+<b id="confidence">--%</b>
+</div>
+
+<div class="stat">
+<small>RSI</small>
+<b id="rsi">--</b>
+</div>
+
+<div class="stat">
+<small>EMA20</small>
+<b id="ema20">--</b>
+</div>
+
+<div class="stat">
+<small>EMA50</small>
+<b id="ema50">--</b>
+</div>
+
+<div class="stat">
+<small>MACD</small>
+<b id="macd">--</b>
+</div>
+
+<div class="stat">
+<small>Last Candle</small>
+<b id="lastCandle">--</b>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<b>📊 Scanner Information</b>
+
+<p class="note">
+Data source: Twelve Data REST API.<br>
+1M, 5M এবং 15M সরাসরি API থেকে নেওয়া হয়।<br>
+2M candle 1M candle থেকে তৈরি করা হয়।<br>
+Auto refresh: 120 seconds.
+</p>
+
+<p class="note">
+⚠️ Confidence একটি indicator-based score; এটি guaranteed winning probability নয়।
+</p>
+
+</div>
+
+</div>
+
+
+<button id="floatingScan">SCAN</button>
 
 
 <script>
 
-/* =========================================================
-   AI FOREX SCANNER
-   ========================================================= */
+let API_KEY = localStorage.getItem("td_api_key") || "";
 
-const PAIRS = [
-  "NZD/JPY",
-  "NZD/USD",
-  "USD/MXN",
-  "USD/PHP",
-  "USD/NGN",
-  "USD/JPY",
-  "CHF/JPY",
-  "CAD/JPY",
-  "GBP/CHF",
-  "USD/CAD"
-];
+let timeframe = "1min";
+let candles = [];
+let currentSymbol = "NZD/JPY";
 
-let state = {
-  symbol: localStorage.getItem("scanner_symbol") || "USD/JPY",
-  timeframe: localStorage.getItem("scanner_tf") || "1min",
-  candles: [],
-  tickPrice: null,
-  ws: null,
-  wsConnected: false,
-  loading: false,
-  refreshTimer: null,
-  heartbeatTimer: null
-};
+const apiKeyInput = document.getElementById("apiKey");
+const statusBox = document.getElementById("status");
+
+apiKeyInput.value = API_KEY;
 
 
-/* =========================================================
-   ELEMENTS
-   ========================================================= */
+/* =========================
+   STATUS
+========================= */
 
-const symbolEl = document.getElementById("symbol");
-const timeframeEl = document.getElementById("timeframe");
-const apiKeyEl = document.getElementById("apiKey");
-
-const priceEl = document.getElementById("price");
-const changeEl = document.getElementById("change");
-const symbolNameEl = document.getElementById("symbolName");
-
-const directionEl = document.getElementById("direction");
-const signalEl = document.getElementById("signal");
-const confidenceEl = document.getElementById("confidence");
-
-const rsiEl = document.getElementById("rsi");
-const ema20El = document.getElementById("ema20");
-const ema50El = document.getElementById("ema50");
-const macdEl = document.getElementById("macd");
-const highEl = document.getElementById("high");
-const lowEl = document.getElementById("low");
-
-const statusEl = document.getElementById("status");
-const chartInfoEl = document.getElementById("chartInfo");
-const canvas = document.getElementById("chart");
-const ctx = canvas.getContext("2d");
-
-
-/* =========================================================
-   LOAD SETTINGS
-   ========================================================= */
-
-symbolEl.value = state.symbol;
-timeframeEl.value = state.timeframe;
-
-const savedKey = localStorage.getItem("twelve_data_key");
-
-if(savedKey){
-  apiKeyEl.value = savedKey;
+function setStatus(text, good=false){
+  statusBox.innerHTML = text;
+  statusBox.className = good ? "status good" : "status bad";
 }
 
 
-/* =========================================================
-   HELPERS
-   ========================================================= */
-
-function getKey(){
-  return apiKeyEl.value.trim();
-}
-
-function setStatus(text, type=""){
-  statusEl.textContent = text;
-  statusEl.className = "status " + type;
-}
-
-function decimals(price){
-
-  if(price >= 100) return 3;
-  if(price >= 10) return 4;
-  if(price >= 1) return 5;
-
-  return 6;
-}
-
-function formatPrice(price){
-
-  if(price === null || price === undefined || !isFinite(price)){
-    return "--";
-  }
-
-  return Number(price).toFixed(decimals(price));
-}
-
-function intervalSeconds(tf){
-
-  if(tf === "1min") return 60;
-  if(tf === "2min") return 120;
-  if(tf === "5min") return 300;
-  if(tf === "15min") return 900;
-
-  return 60;
-}
-
-function bucketTime(timestamp, seconds){
-
-  return Math.floor(timestamp / seconds) * seconds;
-}
-
-
-/* =========================================================
+/* =========================
    SAVE API KEY
-   ========================================================= */
+========================= */
 
-document.getElementById("saveKey").addEventListener("click", () => {
+function saveKey(){
 
-  const key = getKey();
+  const key = apiKeyInput.value.trim();
 
   if(!key){
-    setStatus("Please enter your Twelve Data API key.", "error");
+    setStatus("❌ API key দিন।");
     return;
   }
 
-  localStorage.setItem("twelve_data_key", key);
+  API_KEY = key;
 
-  setStatus("API key saved. Loading live market...", "ok");
+  localStorage.setItem("td_api_key", key);
 
-  startScanner();
-});
-
-
-/* =========================================================
-   SYMBOL CHANGE
-   ========================================================= */
-
-symbolEl.addEventListener("change", () => {
-
-  state.symbol = symbolEl.value;
-
-  localStorage.setItem(
-    "scanner_symbol",
-    state.symbol
-  );
-
-  startScanner();
-});
-
-
-/* =========================================================
-   TIMEFRAME CHANGE
-   ========================================================= */
-
-timeframeEl.addEventListener("change", () => {
-
-  state.timeframe = timeframeEl.value;
-
-  localStorage.setItem(
-    "scanner_tf",
-    state.timeframe
-  );
-
-  updateTFButtons();
-
-  startScanner();
-});
-
-
-/* =========================================================
-   TIMEFRAME BUTTONS
-   ========================================================= */
-
-document.querySelectorAll(".tf").forEach(btn => {
-
-  btn.addEventListener("click", () => {
-
-    const tf = btn.dataset.tf;
-
-    state.timeframe = tf;
-
-    timeframeEl.value = tf;
-
-    localStorage.setItem(
-      "scanner_tf",
-      tf
-    );
-
-    updateTFButtons();
-
-    startScanner();
-  });
-
-});
-
-
-function updateTFButtons(){
-
-  document.querySelectorAll(".tf").forEach(btn => {
-
-    btn.classList.toggle(
-      "active",
-      btn.dataset.tf === state.timeframe
-    );
-
-  });
-
+  setStatus("✅ API key browser-এ save হয়েছে। এখন TEST API চাপুন।",true);
 }
 
-updateTFButtons();
 
+/* =========================
+   TEST API
+========================= */
 
-/* =========================================================
-   FETCH TIME SERIES
-   ========================================================= */
+async function testAPI(){
 
-async function fetchSeries(symbol, interval){
-
-  const key = getKey();
+  const key = apiKeyInput.value.trim();
 
   if(!key){
-    throw new Error("API key missing.");
+    setStatus("❌ আগে API key লিখুন।");
+    return;
   }
 
-  const outputSize =
-    interval === "1min" ? 100 :
-    interval === "2min" ? 120 :
-    interval === "5min" ? 100 :
-    100;
+  API_KEY = key;
+  localStorage.setItem("td_api_key",key);
 
-  const url =
-    "https://api.twelvedata.com/time_series" +
-    "?symbol=" + encodeURIComponent(symbol) +
-    "&interval=" + interval +
-    "&outputsize=" + outputSize +
-    "&timezone=UTC" +
-    "&apikey=" + encodeURIComponent(key);
-
-  const response = await fetch(url);
-
-  if(!response.ok){
-    throw new Error("Network error: " + response.status);
-  }
-
-  const data = await response.json();
-
-  if(data.status === "error"){
-    throw new Error(data.message || "Twelve Data error");
-  }
-
-  if(!data.values || !Array.isArray(data.values)){
-    throw new Error("No candle data received.");
-  }
-
-  return data.values;
-}
-
-
-/* =========================================================
-   PARSE NORMAL CANDLES
-   ========================================================= */
-
-function parseCandles(values){
-
-  return values
-    .map(v => {
-
-      const timestamp =
-        Date.parse(
-          String(v.datetime).replace(" ","T") + "Z"
-        ) / 1000;
-
-      return {
-        time: timestamp,
-        open: Number(v.open),
-        high: Number(v.high),
-        low: Number(v.low),
-        close: Number(v.close)
-      };
-
-    })
-    .filter(c =>
-      isFinite(c.time) &&
-      isFinite(c.open) &&
-      isFinite(c.high) &&
-      isFinite(c.low) &&
-      isFinite(c.close)
-    )
-    .sort((a,b) => a.time - b.time);
-}
-
-
-/* =========================================================
-   BUILD 2 MIN CANDLES FROM 1 MIN
-   ========================================================= */
-
-function build2Min(values){
-
-  const oneMin = parseCandles(values);
-
-  const map = new Map();
-
-  for(const c of oneMin){
-
-    const bucket =
-      bucketTime(c.time, 120);
-
-    if(!map.has(bucket)){
-
-      map.set(bucket, {
-        time:bucket,
-        open:c.open,
-        high:c.high,
-        low:c.low,
-        close:c.close
-      });
-
-    }else{
-
-      const x = map.get(bucket);
-
-      x.high = Math.max(x.high, c.high);
-      x.low = Math.min(x.low, c.low);
-      x.close = c.close;
-    }
-  }
-
-  return [...map.values()]
-    .sort((a,b)=>a.time-b.time)
-    .slice(-100);
-}
-
-
-/* =========================================================
-   LOAD HISTORY
-   ========================================================= */
-
-async function loadHistory(){
-
-  if(state.loading) return;
-
-  state.loading = true;
-
-  try{
-
-    setStatus(
-      "Loading " +
-      state.symbol +
-      " " +
-      state.timeframe +
-      " candles..."
-    );
-
-    let values;
-
-    if(state.timeframe === "2min"){
-
-      values = await fetchSeries(
-        state.symbol,
-        "1min"
-      );
-
-      state.candles = build2Min(values);
-
-    }else{
-
-      values = await fetchSeries(
-        state.symbol,
-        state.timeframe
-      );
-
-      state.candles = parseCandles(values);
-    }
-
-    if(!state.candles.length){
-      throw new Error("No candles found.");
-    }
-
-    const last =
-      state.candles[state.candles.length-1];
-
-    state.tickPrice = last.close;
-
-    setStatus(
-      "Live market loaded • " +
-      state.symbol +
-      " • " +
-      state.timeframe,
-      "ok"
-    );
-
-    updateAll();
-
-    connectWebSocket();
-
-  }catch(error){
-
-    console.error(error);
-
-    setStatus(
-      error.message ||
-      "Unable to load market data.",
-      "error"
-    );
-
-  }finally{
-
-    state.loading = false;
-  }
-}
-
-
-/* =========================================================
-   LIVE WEBSOCKET
-   ========================================================= */
-
-function closeWebSocket(){
-
-  if(state.heartbeatTimer){
-
-    clearInterval(
-      state.heartbeatTimer
-    );
-
-    state.heartbeatTimer = null;
-  }
-
-  if(state.ws){
-
-    try{
-      state.ws.close();
-    }catch(e){}
-
-    state.ws = null;
-  }
-
-  state.wsConnected = false;
-}
-
-
-function connectWebSocket(){
-
-  closeWebSocket();
-
-  const key = getKey();
-
-  if(!key) return;
+  setStatus("⏳ API test চলছে...");
 
   try{
 
     const url =
-      "wss://ws.twelvedata.com/v1/quotes/price?apikey=" +
-      encodeURIComponent(key);
+      "https://api.twelvedata.com/time_series" +
+      "?symbol=EUR%2FUSD" +
+      "&interval=1min" +
+      "&outputsize=5" +
+      "&apikey=" + encodeURIComponent(API_KEY);
 
-    const ws = new WebSocket(url);
+    const response = await fetch(url);
 
-    state.ws = ws;
+    const data = await response.json();
 
-    ws.onopen = () => {
+    if(!response.ok || data.status === "error"){
 
-      state.wsConnected = true;
-
-      setStatus(
-        "LIVE tick stream connected • " +
-        state.symbol,
-        "ok"
-      );
-
-      ws.send(JSON.stringify({
-        action:"subscribe",
-        params:{
-          symbols:state.symbol
-        }
-      }));
-
-      state.heartbeatTimer =
-        setInterval(() => {
-
-          if(ws.readyState === WebSocket.OPEN){
-
-            ws.send(JSON.stringify({
-              action:"heartbeat"
-            }));
-
-          }
-
-        },10000);
-    };
-
-
-    ws.onmessage = event => {
-
-      try{
-
-        const data =
-          JSON.parse(event.data);
-
-        if(data.event === "price"){
-
-          const price =
-            Number(
-              data.price
-            );
-
-          const ts =
-            Number(
-              data.timestamp ||
-              Math.floor(Date.now()/1000)
-            );
-
-          if(isFinite(price)){
-
-            state.tickPrice = price;
-
-            updateLiveCandle(
-              price,
-              ts
-            );
-
-            updateAll();
-          }
-        }
-
-      }catch(e){
-        console.log(e);
-      }
-
-    };
-
-
-    ws.onerror = () => {
-
-      state.wsConnected = false;
+      const code = data.code || response.status;
+      const message = data.message || "Unknown API error";
 
       setStatus(
-        "WebSocket unavailable • using market candles",
-        "error"
+        "❌ API ERROR " + code + ": " + message
       );
-    };
 
+      return;
+    }
 
-    ws.onclose = () => {
+    if(!data.values || !data.values.length){
 
-      state.wsConnected = false;
+      setStatus("❌ API কাজ করছে, কিন্তু candle data পাওয়া যায়নি।");
+      return;
+    }
 
-      if(state.heartbeatTimer){
-
-        clearInterval(
-          state.heartbeatTimer
-        );
-
-        state.heartbeatTimer = null;
-      }
-    };
+    setStatus(
+      "✅ API কাজ করছে! EUR/USD candle data পাওয়া গেছে। এখন আপনার market Scan করুন।",
+      true
+    );
 
   }catch(error){
 
-    console.log(error);
+    setStatus(
+      "❌ Network/Browser error: " + error.message
+    );
   }
 }
 
 
-/* =========================================================
-   UPDATE CURRENT CANDLE WITH LIVE TICK
-   ========================================================= */
+/* =========================
+   TIMEFRAME
+========================= */
 
-function updateLiveCandle(price, timestamp){
+document.querySelectorAll(".time-buttons button")
+.forEach(button=>{
 
-  const seconds =
-    intervalSeconds(
-      state.timeframe
-    );
+  button.addEventListener("click",()=>{
 
-  const bucket =
-    bucketTime(
-      timestamp,
-      seconds
-    );
+    document.querySelectorAll(".time-buttons button")
+    .forEach(b=>b.classList.remove("active"));
 
-  let last =
-    state.candles[
-      state.candles.length-1
-    ];
+    button.classList.add("active");
 
-  if(!last){
+    timeframe = button.dataset.tf;
 
-    last = {
-      time:bucket,
-      open:price,
-      high:price,
-      low:price,
-      close:price
-    };
+    scanMarket();
+  });
 
-    state.candles.push(last);
+});
 
-    return;
+
+/* =========================
+   FETCH CANDLES
+========================= */
+
+async function fetchCandles(){
+
+  if(!API_KEY){
+
+    throw new Error("API key missing");
   }
 
-  if(bucket < last.time){
+  currentSymbol =
+    document.getElementById("symbol").value;
 
-    return;
+  let apiInterval = timeframe;
+
+  /*
+    Twelve Data currently supports:
+    1min, 5min, 15min...
+    2min নেই।
+    তাই 2min এর জন্য 1min data নিয়ে
+    local aggregation করা হবে।
+  */
+
+  if(timeframe === "2min"){
+    apiInterval = "1min";
   }
 
-  if(bucket > last.time){
+  const url =
+    "https://api.twelvedata.com/time_series" +
+    "?symbol=" + encodeURIComponent(currentSymbol) +
+    "&interval=" + apiInterval +
+    "&outputsize=120" +
+    "&apikey=" + encodeURIComponent(API_KEY);
 
-    last = {
-      time:bucket,
-      open:price,
-      high:price,
-      low:price,
-      close:price
-    };
+  setStatus(
+    "⏳ " + currentSymbol + " " + timeframe + " data loading..."
+  );
 
-    state.candles.push(last);
+  const response = await fetch(url);
 
-    if(state.candles.length > 120){
+  let data;
 
-      state.candles.shift();
+  try{
+    data = await response.json();
+  }catch(e){
+    throw new Error("Invalid API response");
+  }
+
+  if(!response.ok){
+
+    throw new Error(
+      "HTTP " + response.status
+    );
+  }
+
+  if(data.status === "error"){
+
+    throw new Error(
+      "API " +
+      (data.code || "") +
+      ": " +
+      (data.message || "Unknown error")
+    );
+  }
+
+  if(!data.values || data.values.length < 10){
+
+    throw new Error(
+      "এই market-এর জন্য পর্যাপ্ত candle data পাওয়া যায়নি।"
+    );
+  }
+
+  let result = data.values
+    .map(x=>({
+      time:x.datetime,
+      open:Number(x.open),
+      high:Number(x.high),
+      low:Number(x.low),
+      close:Number(x.close)
+    }))
+    .reverse();
+
+  if(timeframe === "2min"){
+
+    result = aggregate2Min(result);
+  }
+
+  return result;
+}
+
+
+/* =========================
+   2 MIN AGGREGATION
+========================= */
+
+function aggregate2Min(data){
+
+  const result = [];
+
+  let bucket = null;
+
+  for(const c of data){
+
+    const d = new Date(c.time.replace(" ","T")+"Z");
+
+    const minute = d.getUTCMinutes();
+
+    const bucketMinute =
+      minute % 2 === 0 ? minute : minute - 1;
+
+    const key =
+      d.getUTCFullYear()+"-"+
+      String(d.getUTCMonth()+1).padStart(2,"0")+"-"+
+      String(d.getUTCDate()).padStart(2,"0")+" "+
+      String(d.getUTCHours()).padStart(2,"0")+":"+
+      String(bucketMinute).padStart(2,"0");
+
+    if(!bucket || bucket.time !== key){
+
+      if(bucket){
+        result.push(bucket);
+      }
+
+      bucket = {
+        time:key,
+        open:c.open,
+        high:c.high,
+        low:c.low,
+        close:c.close
+      };
+
+    }else{
+
+      bucket.high =
+        Math.max(bucket.high,c.high);
+
+      bucket.low =
+        Math.min(bucket.low,c.low);
+
+      bucket.close =
+        c.close;
     }
+  }
 
+  if(bucket){
+    result.push(bucket);
+  }
+
+  return result;
+}
+
+
+/* =========================
+   EMA
+========================= */
+
+function EMA(values, period){
+
+  if(values.length < period){
+    return null;
+  }
+
+  const multiplier =
+    2 / (period + 1);
+
+  let ema =
+    values.slice(0,period)
+    .reduce((a,b)=>a+b,0) / period;
+
+  for(let i=period;i<values.length;i++){
+
+    ema =
+      (values[i]-ema) * multiplier + ema;
+  }
+
+  return ema;
+}
+
+
+/* =========================
+   RSI
+========================= */
+
+function RSI(values,period=14){
+
+  if(values.length < period+1){
+    return null;
+  }
+
+  let gains=0;
+  let losses=0;
+
+  for(let i=1;i<=period;i++){
+
+    const diff =
+      values[i]-values[i-1];
+
+    if(diff>=0)
+      gains += diff;
+    else
+      losses += Math.abs(diff);
+  }
+
+  let avgGain =
+    gains/period;
+
+  let avgLoss =
+    losses/period;
+
+  for(let i=period+1;i<values.length;i++){
+
+    const diff =
+      values[i]-values[i-1];
+
+    const gain =
+      diff>0 ? diff : 0;
+
+    const loss =
+      diff<0 ? Math.abs(diff) : 0;
+
+    avgGain =
+      ((avgGain*(period-1))+gain)/period;
+
+    avgLoss =
+      ((avgLoss*(period-1))+loss)/period;
+  }
+
+  if(avgLoss===0)
+    return 100;
+
+  const rs =
+    avgGain/avgLoss;
+
+  return 100-(100/(1+rs));
+}
+
+
+/* =========================
+   MACD
+========================= */
+
+function MACD(values){
+
+  const e12 = EMA(values,12);
+  const e26 = EMA(values,26);
+
+  if(e12===null || e26===null)
+    return null;
+
+  return e12-e26;
+}
+
+
+/* =========================
+   ANALYSIS
+========================= */
+
+function analyze(data){
+
+  const closes =
+    data.map(c=>c.close);
+
+  const price =
+    closes[closes.length-1];
+
+  const ema20 =
+    EMA(closes,20);
+
+  const ema50 =
+    EMA(closes,50);
+
+  const rsi =
+    RSI(closes,14);
+
+  const macd =
+    MACD(closes);
+
+  let buyScore=0;
+  let sellScore=0;
+
+  if(ema20 !== null){
+
+    if(price > ema20)
+      buyScore += 20;
+
+    if(price < ema20)
+      sellScore += 20;
+  }
+
+  if(ema50 !== null){
+
+    if(price > ema50)
+      buyScore += 20;
+
+    if(price < ema50)
+      sellScore += 20;
+  }
+
+  if(rsi !== null){
+
+    if(rsi > 50 && rsi < 70)
+      buyScore += 20;
+
+    if(rsi < 50 && rsi > 30)
+      sellScore += 20;
+  }
+
+  if(macd !== null){
+
+    if(macd > 0)
+      buyScore += 20;
+
+    if(macd < 0)
+      sellScore += 20;
+  }
+
+  const last = data[data.length-1];
+  const previous = data[data.length-2];
+
+  if(last.close > previous.close)
+    buyScore += 20;
+
+  if(last.close < previous.close)
+    sellScore += 20;
+
+
+  let signal="NO TRADE";
+  let score=50;
+  let direction="SIDEWAYS";
+
+  if(buyScore > sellScore){
+
+    direction="UP";
+    score=buyScore;
+
+    if(buyScore >= 60)
+      signal="BUY";
+
+  }else if(sellScore > buyScore){
+
+    direction="DOWN";
+    score=sellScore;
+
+    if(sellScore >= 60)
+      signal="SELL";
+  }
+
+  return {
+    price,
+    ema20,
+    ema50,
+    rsi,
+    macd,
+    signal,
+    score,
+    direction,
+    candle:last.time
+  };
+}
+
+
+/* =========================
+   DRAW CHART
+========================= */
+
+function drawChart(data){
+
+  const canvas =
+    document.getElementById("chart");
+
+  const box =
+    canvas.parentElement;
+
+  const ratio =
+    window.devicePixelRatio || 1;
+
+  canvas.width =
+    box.clientWidth * ratio;
+
+  canvas.height =
+    box.clientHeight * ratio;
+
+  const ctx =
+    canvas.getContext("2d");
+
+  ctx.scale(ratio,ratio);
+
+  const w=box.clientWidth;
+  const h=box.clientHeight;
+
+  ctx.clearRect(0,0,w,h);
+
+  if(!data.length)
+    return;
+
+  const visible =
+    data.slice(-60);
+
+  let min =
+    Math.min(...visible.map(c=>c.low));
+
+  let max =
+    Math.max(...visible.map(c=>c.high));
+
+  const padding=30;
+
+  const chartH =
+    h-padding*2;
+
+  const chartW =
+    w-padding*2;
+
+  const range =
+    max-min || 1;
+
+  const candleWidth =
+    chartW/visible.length;
+
+  function y(price){
+
+    return padding +
+      (max-price)/range*chartH;
+  }
+
+  ctx.strokeStyle="#23364c";
+  ctx.lineWidth=1;
+
+  for(let i=0;i<5;i++){
+
+    const yy =
+      padding + i*chartH/4;
+
+    ctx.beginPath();
+    ctx.moveTo(padding,yy);
+    ctx.lineTo(w-padding,yy);
+    ctx.stroke();
+  }
+
+  visible.forEach((c,i)=>{
+
+    const x =
+      padding+i*candleWidth+candleWidth/2;
+
+    const openY=y(c.open);
+    const closeY=y(c.close);
+    const highY=y(c.high);
+    const lowY=y(c.low);
+
+    const up =
+      c.close>=c.open;
+
+    ctx.strokeStyle =
+      up ? "#38e58a" : "#ff5d70";
+
+    ctx.fillStyle =
+      up ? "#38e58a" : "#ff5d70";
+
+    ctx.beginPath();
+    ctx.moveTo(x,highY);
+    ctx.lineTo(x,lowY);
+    ctx.stroke();
+
+    const top =
+      Math.min(openY,closeY);
+
+    const height =
+      Math.max(1,Math.abs(openY-closeY));
+
+    ctx.fillRect(
+      x-candleWidth*0.32,
+      top,
+      candleWidth*0.64,
+      height
+    );
+
+  });
+
+}
+
+
+/* =========================
+   UPDATE UI
+========================= */
+
+function updateUI(result){
+
+  document.getElementById("price")
+    .textContent =
+    result.price.toFixed(5);
+
+  document.getElementById("direction")
+    .textContent =
+    "MARKET DIRECTION: " +
+    result.direction;
+
+  document.getElementById("confidence")
+    .textContent =
+    result.score + "%";
+
+  document.getElementById("rsi")
+    .textContent =
+    result.rsi === null
+    ? "--"
+    : result.rsi.toFixed(2);
+
+  document.getElementById("ema20")
+    .textContent =
+    result.ema20 === null
+    ? "--"
+    : result.ema20.toFixed(5);
+
+  document.getElementById("ema50")
+    .textContent =
+    result.ema50 === null
+    ? "--"
+    : result.ema50.toFixed(5);
+
+  document.getElementById("macd")
+    .textContent =
+    result.macd === null
+    ? "--"
+    : result.macd.toFixed(6);
+
+  document.getElementById("lastCandle")
+    .textContent =
+    result.candle;
+
+  const signal =
+    document.getElementById("signal");
+
+  signal.textContent =
+    result.signal;
+
+  signal.className="signal";
+
+  if(result.signal==="BUY"){
+    signal.classList.add("buy");
+  }else if(result.signal==="SELL"){
+    signal.classList.add("sell");
   }else{
+    signal.classList.add("wait");
+  }
+}
 
-    last.high =
-      Math.max(
-        last.high,
-        price
+
+/* =========================
+   SCAN MARKET
+========================= */
+
+async function scanMarket(){
+
+  try{
+
+    if(!API_KEY){
+
+      setStatus(
+        "❌ API key পাওয়া যায়নি। আগে API key Save করুন।"
       );
 
-    last.low =
+      return;
+    }
+
+    const data =
+      await fetchCandles();
+
+    candles=data;
+
+    const result =
+      analyze(data);
+
+    updateUI(result);
+
+    drawChart(data);
+
+    setStatus(
+      "✅ " +
+      currentSymbol +
+      " " +
+      timeframe +
+      " data loaded successfully.",
+      true
+    );
+
+  }catch(error){
+
+    document.getElementById("price")
+      .textContent="--";
+
+    document.getElementById("signal")
+      .textContent="NO TRADE";
+
+    setStatus(
+      "❌ " + error.message
+    );
+
+    console.error(error);
+  }
+}
+
+
+/* =========================
+   AUTO REFRESH
+========================= */
+
+/*
+  Basic plan-এ daily 800 API credits থাকে।
+  তাই প্রতি 2 মিনিটে refresh রাখা হয়েছে।
+*/
+
+setInterval(()=>{
+
+  if(API_KEY){
+    scanMarket();
+  }
+
+},120000);
+
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener("resize",()=>{
+
+  if(candles.length){
+    drawChart(candles);
+  }
+
+});
+
+
+/* =========================
+   DRAGGABLE SCAN BUTTON
+========================= */
+
+const floating =
+  document.getElementById("floatingScan");
+
+let dragging=false;
+let startX=0;
+let startY=0;
+let startLeft=0;
+let startTop=0;
+
+function startDrag(e){
+
+  dragging=true;
+
+  const point =
+    e.touches ? e.touches[0] : e;
+
+  const rect =
+    floating.getBoundingClientRect();
+
+  startX=point.clientX;
+  startY=point.clientY;
+
+  startLeft=rect.left;
+  startTop=rect.top;
+
+  e.preventDefault();
+}
+
+function moveDrag(e){
+
+  if(!dragging)
+    return;
+
+  const point =
+    e.touches ? e.touches[0] : e;
+
+  let left =
+    startLeft + point.clientX-startX;
+
+  let top =
+    startTop + point.clientY-startY;
+
+  left=Math.max(
+    0,
+    Math.min(
+      window.innerWidth-floating.offsetWidth,
+      left
+    )
+  );
+
+  top=Math.max(
+    0,
+    Math.min(
+      window.innerHeight-floating.offsetHeight,
+      top
+    )
+  );
+
+  floating.style.left=left+"px";
+  floating.style.top=top+"px";
+  floating.style.right="auto";
+  floating.style.bottom="auto";
+
+  e.preventDefault();
+}
+
+function stopDrag(){
+
+  dragging=false;
+}
+
+floating.addEventListener(
+  "mousedown",
+  startDrag
+);
+
+document.addEventListener(
+  "mousemove",
+  moveDrag
+);
+
+document.addEventListener(
+  "mouseup",
+  stopDrag
+);
+
+floating.addEventListener(
+  "touchstart",
+  startDrag,
+  {passive:false}
+);
+
+document.addEventListener(
+  "touchmove",
+  moveDrag,
+  {passive:false}
+);
+
+document.addEventListener(
+  "touchend",
+  stopDrag
+);
+
+floating.addEventListener("click",()=>{
+
+  if(!dragging){
+    scanMarket();
+  }
+
+});
+
+
+/* =========================
+   INITIAL
+========================= */
+
+if(API_KEY){
+
+  setStatus(
+    "🔑 Saved API key পাওয়া গেছে। TEST API চাপুন।"
+  );
+}
+
+</script>
+
+</body>
+</html>
