@@ -2,665 +2,1144 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>AI Trading Scanner</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AI Market Scanner</title>
 
 <style>
-* {
-  box-sizing: border-box;
+*{
+  box-sizing:border-box;
+  -webkit-tap-highlight-color:transparent;
 }
 
-body {
-  margin: 0;
-  padding: 18px;
-  background: #071019;
-  color: white;
-  font-family: Arial, sans-serif;
+body{
+  margin:0;
+  background:#071019;
+  color:#fff;
+  font-family:Arial,sans-serif;
+  min-height:100vh;
 }
 
-.container {
-  max-width: 750px;
-  margin: auto;
+/* Floating scanner button */
+#scanBtn{
+  position:fixed;
+  left:calc(100vw - 105px);
+  top:calc(100vh - 75px);
+  z-index:9999;
+
+  border:0;
+  border-radius:50px;
+  padding:13px 20px;
+
+  background:#0797df;
+  color:white;
+  font-size:15px;
+  font-weight:bold;
+
+  box-shadow:0 6px 22px #000b;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 20px;
+#scanBtn:active{
+  cursor:grabbing;
 }
 
-.header h1 {
-  color: #38bdf8;
-  font-size: 32px;
-  margin-bottom: 8px;
+/* Scanner panel */
+#panel{
+  display:none;
+  position:fixed;
+  z-index:9998;
+
+  width:315px;
+  max-width:calc(100vw - 20px);
+
+  padding:16px;
+
+  background:#111e2d;
+  border:1px solid #2b4055;
+  border-radius:18px;
+
+  box-shadow:0 10px 35px #000b;
 }
 
-.header p {
-  color: #94a3b8;
-  font-size: 16px;
+select{
+  width:100%;
+  padding:11px;
+  margin-bottom:9px;
+
+  border:0;
+  border-radius:10px;
+
+  background:#1b2b3d;
+  color:white;
+  font-size:15px;
 }
 
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-bottom: 15px;
+#marketStatus{
+  text-align:center;
+  color:#9fb0c2;
+  font-size:12px;
+  margin:3px 0 10px;
 }
 
-select,
-button {
-  width: 100%;
-  padding: 15px;
-  border: none;
-  border-radius: 12px;
-  font-size: 16px;
+.price{
+  text-align:center;
+  font-size:25px;
+  font-weight:bold;
+  margin:8px 0 12px;
 }
 
-select {
-  background: #172333;
-  color: white;
+.signal{
+  text-align:center;
+  font-size:25px;
+  font-weight:bold;
+  padding:13px;
+  margin-bottom:10px;
+  border-radius:12px;
 }
 
-button {
-  background: #0ea5e9;
-  color: white;
-  font-weight: bold;
+.buy{
+  background:#087d4d;
 }
 
-button:active {
-  transform: scale(.98);
+.sell{
+  background:#982020;
 }
 
-.card {
-  background: #101c2b;
-  border: 1px solid #243447;
-  border-radius: 18px;
-  padding: 18px;
-  margin-bottom: 15px;
+.wait{
+  background:#675818;
 }
 
-.price {
-  text-align: center;
-  font-size: 34px;
-  font-weight: bold;
-  margin: 8px 0;
+.percent{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:7px;
 }
 
-.change {
-  text-align: center;
-  color: #94a3b8;
-  margin-bottom: 15px;
+.box{
+  background:#18283a;
+  padding:9px 3px;
+  text-align:center;
+  border-radius:10px;
+  color:#9fb0c2;
+  font-size:12px;
 }
 
-.signal {
-  text-align: center;
-  font-size: 30px;
-  font-weight: bold;
-  padding: 20px;
-  border-radius: 14px;
-  margin: 15px 0;
+.box b{
+  display:block;
+  color:white;
+  font-size:18px;
+  margin-top:4px;
 }
 
-.buy {
-  background: #064e3b;
-  color: #34d399;
+.info{
+  text-align:center;
+  color:#9eafc3;
+  font-size:13px;
+  margin-top:10px;
 }
 
-.sell {
-  background: #7f1d1d;
-  color: #f87171;
+.follow{
+  color:#43e698;
+  font-weight:bold;
 }
 
-.hold {
-  background: #78350f;
-  color: #fbbf24;
+#status{
+  text-align:center;
+  color:#8195aa;
+  font-size:11px;
+  margin-top:9px;
+  line-height:1.4;
 }
 
-.strength {
-  text-align: center;
-  font-size: 18px;
-  margin: 12px 0;
-}
+#reset{
+  width:100%;
+  margin-top:10px;
+  padding:8px;
 
-.bar {
-  height: 10px;
-  background: #243447;
-  border-radius: 10px;
-  overflow: hidden;
-}
+  border:0;
+  border-radius:8px;
 
-.barFill {
-  height: 100%;
-  width: 0%;
-  background: #38bdf8;
-  transition: width .5s;
-}
-
-.chartBox {
-  width: 100%;
-  height: 260px;
-  position: relative;
-}
-
-canvas {
-  width: 100%;
-  height: 100%;
-}
-
-.stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  margin-top: 15px;
-}
-
-.stat {
-  background: #172333;
-  padding: 15px;
-  border-radius: 12px;
-}
-
-.label {
-  color: #94a3b8;
-  font-size: 13px;
-}
-
-.value {
-  margin-top: 6px;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.analysis {
-  text-align: center;
-  color: #cbd5e1;
-  line-height: 1.5;
-  margin-top: 18px;
-}
-
-.status {
-  text-align: center;
-  color: #64748b;
-  font-size: 13px;
-}
-
-@media(max-width:500px) {
-
-  body {
-    padding: 12px;
-  }
-
-  .header h1 {
-    font-size: 28px;
-  }
-
-  .price {
-    font-size: 28px;
-  }
-
-  .signal {
-    font-size: 26px;
-  }
+  background:#26394c;
+  color:#b8c8d8;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- Scanner panel -->
+<div id="panel">
 
-<div class="header">
-<h1>🤖 AI Trading Scanner</h1>
-<p>Live Cryptocurrency Market Analysis</p>
-</div>
+  <!-- Market type -->
+  <select id="marketType">
+    <option value="crypto">Crypto — Binance</option>
+    <option value="forex">Forex — Data source required</option>
+    <option value="stock">Stock — Data source required</option>
+    <option value="binary">Binary / OTC — Broker feed required</option>
+  </select>
 
-<div class="controls">
+  <!-- Crypto symbol -->
+  <select id="symbol">
+    <option value="BTCUSDT">BTC / USDT</option>
+    <option value="ETHUSDT">ETH / USDT</option>
+    <option value="BNBUSDT">BNB / USDT</option>
+    <option value="SOLUSDT">SOL / USDT</option>
+    <option value="XRPUSDT">XRP / USDT</option>
+    <option value="DOGEUSDT">DOGE / USDT</option>
+    <option value="ADAUSDT">ADA / USDT</option>
+    <option value="AVAXUSDT">AVAX / USDT</option>
+    <option value="LINKUSDT">LINK / USDT</option>
+    <option value="TRXUSDT">TRX / USDT</option>
+  </select>
 
-<select id="symbol">
-<option value="BTCUSDT">BTC / USDT</option>
-<option value="ETHUSDT">ETH / USDT</option>
-<option value="BNBUSDT">BNB / USDT</option>
-<option value="SOLUSDT">SOL / USDT</option>
-<option value="XRPUSDT">XRP / USDT</option>
-</select>
+  <!-- Timeframe -->
+  <select id="timeframe">
+    <option value="1m">1 Minute</option>
+    <option value="2m">2 Minutes</option>
+    <option value="5m">5 Minutes</option>
+    <option value="15m">15 Minutes</option>
+  </select>
 
-<select id="interval">
-<option value="15m">15 Minutes</option>
-<option value="1h" selected>1 Hour</option>
-<option value="4h">4 Hours</option>
-</select>
+  <div id="marketStatus">
+    ● Ready
+  </div>
 
-</div>
+  <div id="price" class="price">
+    --
+  </div>
 
-<button onclick="scanMarket()">🔍 SCAN MARKET</button>
+  <div id="signal" class="signal wait">
+    NO TRADE
+  </div>
 
-<div class="card">
+  <div class="percent">
 
-<div id="price" class="price">
-Loading...
-</div>
+    <div class="box">
+      BUY
+      <b id="buy">--%</b>
+    </div>
 
-<div id="change" class="change">
-Loading market...
-</div>
+    <div class="box">
+      SELL
+      <b id="sell">--%</b>
+    </div>
 
-<div id="signal" class="signal hold">
-WAITING
-</div>
+    <div class="box">
+      WAIT
+      <b id="wait">--%</b>
+    </div>
 
-<div class="strength">
-Signal Strength:
-<strong id="strength">0%</strong>
-</div>
+  </div>
 
-<div class="bar">
-<div id="barFill" class="barFill"></div>
-</div>
+  <div class="info">
+    Signal Confidence:
+    <b id="confidence">--%</b>
+  </div>
 
-</div>
+  <div class="info">
+    Market Following:
+    <span class="follow">● ON</span>
+  </div>
 
-<div class="card">
+  <div id="status">
+    Select a market and press SCAN.
+  </div>
 
-<h3>📈 Price Chart</h3>
-
-<div class="chartBox">
-<canvas id="chart"></canvas>
-</div>
-
-</div>
-
-<div class="card">
-
-<div class="stats">
-
-<div class="stat">
-<div class="label">RSI</div>
-<div id="rsi" class="value">-</div>
-</div>
-
-<div class="stat">
-<div class="label">EMA 20</div>
-<div id="ema20" class="value">-</div>
-</div>
-
-<div class="stat">
-<div class="label">EMA 50</div>
-<div id="ema50" class="value">-</div>
-</div>
-
-<div class="stat">
-<div class="label">MACD</div>
-<div id="macd" class="value">-</div>
-</div>
+  <button id="reset">
+    Reset Button Position
+  </button>
 
 </div>
 
-<p id="analysis" class="analysis">
-Press SCAN MARKET to analyze.
-</p>
+<!-- Floating button -->
+<button id="scanBtn">
+  ⚡ SCAN
+</button>
 
-<p class="status">
-Last update: <span id="updated">-</span>
-</p>
-
-<p class="status">
-⚠️ Analysis only. Signals are not guaranteed.
-</p>
-
-</div>
-
-</div>
 
 <script>
 
-const API =
-"https://api.binance.com/api/v3/klines";
+/* =====================================================
+   GLOBALS
+===================================================== */
 
-async function getData(symbol, interval) {
+const scanBtn = document.getElementById("scanBtn");
+const panel = document.getElementById("panel");
 
-const url =
-API +
-"?symbol=" +
-symbol +
-"&interval=" +
-interval +
-"&limit=100";
+const marketType =
+  document.getElementById("marketType");
 
-const response =
-await fetch(url);
+const symbol =
+  document.getElementById("symbol");
 
-if (!response.ok) {
-throw new Error("Market data unavailable");
-}
+const timeframe =
+  document.getElementById("timeframe");
 
-return await response.json();
-}
+let refreshTimer = null;
 
-function ema(values, period) {
 
-const multiplier =
-2 / (period + 1);
+/* =====================================================
+   OPEN / CLOSE PANEL
+===================================================== */
 
-let result =
-values[0];
+scanBtn.addEventListener("click", function(){
 
-for(let i = 1; i < values.length; i++) {
+  if(panel.style.display === "block"){
 
-result =
-(values[i] - result) *
-multiplier + result;
+    panel.style.display = "none";
 
-}
+    if(refreshTimer){
+      clearInterval(refreshTimer);
+      refreshTimer = null;
+    }
 
-return result;
-}
+    return;
+  }
 
-function calculateRSI(values, period=14) {
+  panel.style.display = "block";
 
-let gains = 0;
-let losses = 0;
+  placePanel();
 
-for(let i=1; i<=period; i++) {
+  scanMarket();
 
-const change =
-values[i] - values[i-1];
-
-if(change >= 0)
-gains += change;
-else
-losses += Math.abs(change);
-
-}
-
-let avgGain =
-gains / period;
-
-let avgLoss =
-losses / period;
-
-for(let i=period+1; i<values.length; i++) {
-
-const change =
-values[i] - values[i-1];
-
-const gain =
-change > 0 ? change : 0;
-
-const loss =
-change < 0 ? Math.abs(change) : 0;
-
-avgGain =
-((avgGain*(period-1))+gain)/period;
-
-avgLoss =
-((avgLoss*(period-1))+loss)/period;
-
-}
-
-if(avgLoss === 0)
-return 100;
-
-const rs =
-avgGain / avgLoss;
-
-return 100 - (100/(1+rs));
-}
-
-function drawChart(values) {
-
-const canvas =
-document.getElementById("chart");
-
-const ctx =
-canvas.getContext("2d");
-
-const width =
-canvas.clientWidth;
-
-const height =
-canvas.clientHeight;
-
-canvas.width =
-width * devicePixelRatio;
-
-canvas.height =
-height * devicePixelRatio;
-
-ctx.scale(
-devicePixelRatio,
-devicePixelRatio
-);
-
-ctx.clearRect(0,0,width,height);
-
-const min =
-Math.min(...values);
-
-const max =
-Math.max(...values);
-
-const range =
-max-min || 1;
-
-ctx.beginPath();
-
-values.forEach((value,index)=>{
-
-const x =
-(index/(values.length-1))*width;
-
-const y =
-height -
-((value-min)/range)*height;
-
-if(index===0)
-ctx.moveTo(x,y);
-else
-ctx.lineTo(x,y);
+  /*
+    Follow live market every 15 seconds.
+  */
+  refreshTimer =
+    setInterval(scanMarket,15000);
 
 });
 
-ctx.strokeStyle =
-"#38bdf8";
 
-ctx.lineWidth = 2;
+/* =====================================================
+   PANEL POSITION
+===================================================== */
 
-ctx.stroke();
+function placePanel(){
+
+  const r =
+    scanBtn.getBoundingClientRect();
+
+  let left = r.left;
+  let top = r.top - 350;
+
+  if(top < 10){
+    top = r.bottom + 10;
+  }
+
+  if(left + 315 > window.innerWidth){
+    left = window.innerWidth - 325;
+  }
+
+  if(left < 10){
+    left = 10;
+  }
+
+  if(top + 350 > window.innerHeight){
+    top = window.innerHeight - 360;
+  }
+
+  if(top < 10){
+    top = 10;
+  }
+
+  panel.style.left = left + "px";
+  panel.style.top = top + "px";
 }
 
-async function scanMarket() {
 
-const symbol =
-document.getElementById("symbol").value;
+/* =====================================================
+   MARKET TYPE
+===================================================== */
 
-const interval =
-document.getElementById("interval").value;
+marketType.addEventListener("change", function(){
 
-const signal =
-document.getElementById("signal");
+  const type = marketType.value;
 
-const analysis =
-document.getElementById("analysis");
+  if(type !== "crypto"){
 
-signal.className =
-"signal hold";
+    document.getElementById("marketStatus")
+      .textContent =
+      "⚠ Live feed/API required for this market.";
 
-signal.textContent =
-"SCANNING...";
+    document.getElementById("signal")
+      .className = "signal wait";
 
-try {
+    document.getElementById("signal")
+      .textContent = "NO LIVE DATA";
 
-const data =
-await getData(symbol,interval);
+    document.getElementById("buy")
+      .textContent = "--%";
 
-const closes =
-data.map(c =>
-parseFloat(c[4])
+    document.getElementById("sell")
+      .textContent = "--%";
+
+    document.getElementById("wait")
+      .textContent = "--%";
+
+    document.getElementById("confidence")
+      .textContent = "--%";
+
+    document.getElementById("price")
+      .textContent = "--";
+
+    document.getElementById("status")
+      .textContent =
+      "Connect an authorised live data feed for this market.";
+
+    return;
+  }
+
+  scanMarket();
+
+});
+
+
+symbol.addEventListener(
+  "change",
+  scanMarket
 );
 
-const firstPrice =
-closes[0];
-
-const price =
-closes[closes.length-1];
-
-const ema20 =
-ema(closes,20);
-
-const ema50 =
-ema(closes,50);
-
-const rsi =
-calculateRSI(closes,14);
-
-const fastEMA =
-ema(closes,12);
-
-const slowEMA =
-ema(closes,26);
-
-const macd =
-fastEMA-slowEMA;
-
-const change =
-((price-firstPrice)/
-firstPrice)*100;
-
-document.getElementById("price")
-.textContent =
-price.toFixed(4)+" USDT";
-
-document.getElementById("change")
-.textContent =
-"Period change: "+
-change.toFixed(2)+"%";
-
-document.getElementById("rsi")
-.textContent =
-rsi.toFixed(2);
-
-document.getElementById("ema20")
-.textContent =
-ema20.toFixed(4);
-
-document.getElementById("ema50")
-.textContent =
-ema50.toFixed(4);
-
-document.getElementById("macd")
-.textContent =
-macd.toFixed(4);
-
-drawChart(closes);
-
-let score = 0;
-
-if(price > ema20)
-score++;
-
-else
-score--;
-
-if(ema20 > ema50)
-score++;
-
-else
-score--;
-
-if(rsi > 55 && rsi < 70)
-score++;
-
-else if(rsi < 45 && rsi > 30)
-score--;
-
-if(macd > 0)
-score++;
-
-else
-score--;
-
-let strength =
-Math.round(
-(Math.abs(score)/4)*100
+timeframe.addEventListener(
+  "change",
+  scanMarket
 );
 
-if(score >= 2) {
 
-signal.className =
-"signal buy";
+/* =====================================================
+   GET BINANCE DATA
+===================================================== */
 
-signal.textContent =
-"🟢 BUY";
+async function getCryptoData(){
 
-analysis.textContent =
-"Bullish conditions detected. "+
-"Price is showing positive momentum.";
+  const selectedSymbol =
+    symbol.value;
 
+  const selectedTimeframe =
+    timeframe.value;
+
+  /*
+    Binance has native:
+    1m, 5m, 15m.
+
+    2m is constructed from 1m candles.
+  */
+
+  let apiInterval =
+    selectedTimeframe;
+
+  if(selectedTimeframe === "2m"){
+    apiInterval = "1m";
+  }
+
+  const url =
+    "https://api.binance.com/api/v3/klines" +
+    "?symbol=" + selectedSymbol +
+    "&interval=" + apiInterval +
+    "&limit=120";
+
+  const response =
+    await fetch(url);
+
+  if(!response.ok){
+    throw new Error("Binance data unavailable");
+  }
+
+  const data =
+    await response.json();
+
+
+  /*
+    Combine 1-minute candles
+    into 2-minute candles.
+  */
+
+  if(selectedTimeframe === "2m"){
+
+    const combined = [];
+
+    for(
+      let i=0;
+      i<data.length-1;
+      i+=2
+    ){
+
+      const a = data[i];
+      const b = data[i+1];
+
+      if(!b) break;
+
+      combined.push([
+        a[0],
+        a[1],
+
+        Math.max(
+          Number(a[2]),
+          Number(b[2])
+        ),
+
+        Math.min(
+          Number(a[3]),
+          Number(b[3])
+        ),
+
+        b[4]
+      ]);
+    }
+
+    return combined;
+  }
+
+  return data;
 }
 
-else if(score <= -2) {
 
-signal.className =
-"signal sell";
+/* =====================================================
+   EMA
+===================================================== */
 
-signal.textContent =
-"🔴 SELL";
+function EMA(values, period){
 
-analysis.textContent =
-"Bearish conditions detected. "+
-"Price is showing downward momentum.";
+  if(values.length < period){
+    return values[values.length-1];
+  }
 
+  const k =
+    2/(period+1);
+
+  let value =
+    values[0];
+
+  for(
+    let i=1;
+    i<values.length;
+    i++
+  ){
+
+    value =
+      values[i]*k +
+      value*(1-k);
+  }
+
+  return value;
 }
 
-else {
 
-signal.className =
-"signal hold";
+/* =====================================================
+   RSI
+===================================================== */
 
-signal.textContent =
-"🟡 HOLD";
+function RSI(values, period=14){
 
-analysis.textContent =
-"Market conditions are mixed. "+
-"Wait for stronger confirmation.";
+  if(values.length <= period){
+    return 50;
+  }
 
+  let gains = 0;
+  let losses = 0;
+
+  for(
+    let i=values.length-period;
+    i<values.length;
+    i++
+  ){
+
+    const change =
+      values[i]-values[i-1];
+
+    if(change > 0){
+      gains += change;
+    }else{
+      losses += Math.abs(change);
+    }
+  }
+
+  if(losses === 0){
+    return 100;
+  }
+
+  const rs =
+    gains/losses;
+
+  return 100-(100/(1+rs));
 }
 
-document.getElementById("strength")
-.textContent =
-strength+"%";
 
-document.getElementById("barFill")
-.style.width =
-strength+"%";
+/* =====================================================
+   SCAN MARKET
+===================================================== */
 
-document.getElementById("updated")
-.textContent =
-new Date().toLocaleTimeString();
+async function scanMarket(){
 
+  /*
+    Non-crypto markets don't have a
+    real feed in this version.
+  */
+
+  if(marketType.value !== "crypto"){
+    return;
+  }
+
+  document.getElementById("marketStatus")
+    .textContent =
+    "● Live Binance feed";
+
+  document.getElementById("status")
+    .textContent =
+    "Analysing live market...";
+
+  try{
+
+    const data =
+      await getCryptoData();
+
+    const closes =
+      data.map(
+        candle => Number(candle[4])
+      );
+
+    if(closes.length < 30){
+      throw new Error("Insufficient candles");
+    }
+
+
+    /* Current price */
+
+    const price =
+      closes[closes.length-1];
+
+
+    /* Indicators */
+
+    const rsi =
+      RSI(closes,14);
+
+    const ema20 =
+      EMA(closes,20);
+
+    const ema50 =
+      EMA(closes,50);
+
+
+    /* MACD */
+
+    const recent =
+      closes.slice(-50);
+
+    const ema12 =
+      EMA(recent,12);
+
+    const ema26 =
+      EMA(recent,26);
+
+    const macd =
+      ema12-ema26;
+
+
+    /* =================================================
+       SCORE
+    ================================================= */
+
+    let score = 50;
+
+
+    /* RSI */
+
+    if(rsi < 30){
+
+      score += 15;
+
+    }else if(rsi < 45){
+
+      score += 5;
+
+    }else if(rsi > 70){
+
+      score -= 15;
+
+    }else if(rsi > 55){
+
+      score -= 5;
+
+    }
+
+
+    /* EMA 20 */
+
+    if(price > ema20){
+      score += 10;
+    }else{
+      score -= 10;
+    }
+
+
+    /* EMA 50 */
+
+    if(ema20 > ema50){
+      score += 10;
+    }else{
+      score -= 10;
+    }
+
+
+    /* MACD */
+
+    if(macd > 0){
+      score += 10;
+    }else{
+      score -= 10;
+    }
+
+
+    score =
+      Math.max(
+        5,
+        Math.min(95,score)
+      );
+
+
+    /* =================================================
+       SIGNAL
+    ================================================= */
+
+    let buy;
+    let sell;
+    let wait;
+    let signal;
+
+
+    if(score >= 60){
+
+      buy = score;
+
+      sell =
+        Math.round(
+          (100-score)*0.55
+        );
+
+      wait =
+        100-buy-sell;
+
+      signal = "🟢 BUY";
+
+    }else if(score <= 40){
+
+      sell =
+        100-score;
+
+      buy =
+        Math.round(
+          score*0.55
+        );
+
+      wait =
+        100-buy-sell;
+
+      signal = "🔴 SELL";
+
+    }else{
+
+      wait = 55;
+
+      buy =
+        Math.round(
+          (100-wait)*score/100
+        );
+
+      sell =
+        100-wait-buy;
+
+      signal = "🟡 NO TRADE";
+    }
+
+
+    /* =================================================
+       DISPLAY
+    ================================================= */
+
+    document.getElementById("price")
+      .textContent =
+      Number(price).toLocaleString(
+        undefined,
+        {
+          minimumFractionDigits:2,
+          maximumFractionDigits:6
+        }
+      ) + " USDT";
+
+
+    document.getElementById("buy")
+      .textContent =
+      buy + "%";
+
+
+    document.getElementById("sell")
+      .textContent =
+      sell + "%";
+
+
+    document.getElementById("wait")
+      .textContent =
+      wait + "%";
+
+
+    document.getElementById("confidence")
+      .textContent =
+      Math.max(
+        buy,
+        sell,
+        wait
+      ) + "%";
+
+
+    const signalBox =
+      document.getElementById("signal");
+
+    signalBox.textContent =
+      signal;
+
+    signalBox.className =
+      "signal";
+
+
+    if(signal.includes("BUY")){
+
+      signalBox.classList.add("buy");
+
+    }else if(signal.includes("SELL")){
+
+      signalBox.classList.add("sell");
+
+    }else{
+
+      signalBox.classList.add("wait");
+
+    }
+
+
+    document.getElementById("status")
+      .textContent =
+      "Live • " +
+      new Date().toLocaleTimeString();
+
+  }catch(error){
+
+    document.getElementById("marketStatus")
+      .textContent =
+      "● Data connection problem";
+
+    document.getElementById("status")
+      .textContent =
+      "Unable to load live market data.";
+
+  }
 }
 
-catch(error) {
 
-signal.className =
-"signal hold";
+/* =====================================================
+   DRAG BUTTON
+===================================================== */
 
-signal.textContent =
-"ERROR";
+let dragging = false;
+let moved = false;
 
-analysis.textContent =
-"Unable to load market data. "+
-"Please try again.";
+let offsetX = 0;
+let offsetY = 0;
 
+
+/* Touch start */
+
+scanBtn.addEventListener(
+  "touchstart",
+  function(e){
+
+    const t =
+      e.touches[0];
+
+    const r =
+      scanBtn.getBoundingClientRect();
+
+    offsetX =
+      t.clientX-r.left;
+
+    offsetY =
+      t.clientY-r.top;
+
+    dragging = true;
+    moved = false;
+
+  },
+  {passive:true}
+);
+
+
+/* Touch move */
+
+scanBtn.addEventListener(
+  "touchmove",
+  function(e){
+
+    if(!dragging) return;
+
+    const t =
+      e.touches[0];
+
+    let x =
+      t.clientX-offsetX;
+
+    let y =
+      t.clientY-offsetY;
+
+
+    x =
+      Math.max(
+        5,
+        Math.min(
+          window.innerWidth-
+          scanBtn.offsetWidth-
+          5,
+          x
+        )
+      );
+
+
+    y =
+      Math.max(
+        5,
+        Math.min(
+          window.innerHeight-
+          scanBtn.offsetHeight-
+          5,
+          y
+        )
+      );
+
+
+    scanBtn.style.left =
+      x+"px";
+
+    scanBtn.style.top =
+      y+"px";
+
+    moved = true;
+
+    e.preventDefault();
+
+  },
+  {passive:false}
+);
+
+
+/* Touch end */
+
+scanBtn.addEventListener(
+  "touchend",
+  function(){
+
+    if(dragging && moved){
+
+      localStorage.setItem(
+        "scannerLeft",
+        scanBtn.style.left
+      );
+
+      localStorage.setItem(
+        "scannerTop",
+        scanBtn.style.top
+      );
+    }
+
+    dragging = false;
+  }
+);
+
+
+/* =====================================================
+   MOUSE DRAG
+===================================================== */
+
+scanBtn.addEventListener(
+  "mousedown",
+  function(e){
+
+    const r =
+      scanBtn.getBoundingClientRect();
+
+    offsetX =
+      e.clientX-r.left;
+
+    offsetY =
+      e.clientY-r.top;
+
+    dragging = true;
+    moved = false;
+
+  }
+);
+
+
+document.addEventListener(
+  "mousemove",
+  function(e){
+
+    if(!dragging) return;
+
+    let x =
+      e.clientX-offsetX;
+
+    let y =
+      e.clientY-offsetY;
+
+
+    x =
+      Math.max(
+        5,
+        Math.min(
+          window.innerWidth-
+          scanBtn.offsetWidth-
+          5,
+          x
+        )
+      );
+
+
+    y =
+      Math.max(
+        5,
+        Math.min(
+          window.innerHeight-
+          scanBtn.offsetHeight-
+          5,
+          y
+        )
+      );
+
+
+    scanBtn.style.left =
+      x+"px";
+
+    scanBtn.style.top =
+      y+"px";
+
+    moved = true;
+  }
+);
+
+
+document.addEventListener(
+  "mouseup",
+  function(){
+
+    if(dragging && moved){
+
+      localStorage.setItem(
+        "scannerLeft",
+        scanBtn.style.left
+      );
+
+      localStorage.setItem(
+        "scannerTop",
+        scanBtn.style.top
+      );
+    }
+
+    dragging = false;
+  }
+);
+
+
+/* =====================================================
+   LOAD SAVED POSITION
+===================================================== */
+
+const savedLeft =
+  localStorage.getItem(
+    "scannerLeft"
+  );
+
+const savedTop =
+  localStorage.getItem(
+    "scannerTop"
+  );
+
+if(savedLeft && savedTop){
+
+  scanBtn.style.left =
+    savedLeft;
+
+  scanBtn.style.top =
+    savedTop;
 }
 
-}
 
-scanMarket();
+/* =====================================================
+   RESET POSITION
+===================================================== */
 
-setInterval(
-scanMarket,
-60000
+document.getElementById(
+  "reset"
+).addEventListener(
+  "click",
+  function(){
+
+    scanBtn.style.left =
+      "calc(100vw - 105px)";
+
+    scanBtn.style.top =
+      "calc(100vh - 75px)";
+
+    localStorage.removeItem(
+      "scannerLeft"
+    );
+
+    localStorage.removeItem(
+      "scannerTop"
+    );
+  }
+);
+
+
+/* =====================================================
+   KEEP BUTTON ON SCREEN
+===================================================== */
+
+window.addEventListener(
+  "resize",
+  function(){
+
+    const r =
+      scanBtn.getBoundingClientRect();
+
+    let x =
+      Math.max(
+        5,
+        Math.min(
+          r.left,
+          window.innerWidth-
+          scanBtn.offsetWidth-
+          5
+        )
+      );
+
+    let y =
+      Math.max(
+        5,
+        Math.min(
+          r.top,
+          window.innerHeight-
+          scanBtn.offsetHeight-
+          5
+        )
+      );
+
+    scanBtn.style.left =
+      x+"px";
+
+    scanBtn.style.top =
+      y+"px";
+  }
 );
 
 </script>
