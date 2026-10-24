@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Trading Scanner</title>
+
+<style>
+body {
+  margin: 0;
+  padding: 20px;
+  background: #101827;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+.card {
+  max-width: 350px;
+  margin: 50px auto;
+  padding: 25px;
+  background: #1e293b;
+  border-radius: 16px;
+}
+h2 { color: #38bdf8; }
+button {
+  padding: 14px 25px;
+  background: #0ea5e9;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 17px;
+}
+#signal {
+  margin-top: 20px;
+  font-size: 24px;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+  <h2>AI Trading Scanner</h2>
+  <p>Market Direction Analysis</p>
+
+  <button onclick="scanMarket()">Scan Market</button>
+
+  <div id="signal">Waiting for scan...</div>
+  <p id="confidence"></p>
+
+  <small>
+    Demo only. No live market data.
+    Signals are not guaranteed.
+  </small>
+</div>
+
+<script>
+function scanMarket() {
+  document.getElementById("signal").textContent =
+    "Live market data required";
+
+  document.getElementById("confidence").textContent =
+    "Connect a market data source to analyze price direction.";
+}
+</script>
+</body>
+</html>
